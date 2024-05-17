@@ -4,6 +4,8 @@ from kivy.lang import Builder
 from filesharer import FileSharer
 import time
 import os
+from kivy.core.clipboard import Clipboard
+import webbrowser
 
 Builder.load_file('frontend.kv')
 
@@ -33,14 +35,34 @@ class CameraScreen(Screen):
         if not os.path.exists("files"):
             os.makedirs("files")
         current_time = time.strftime('%Y%m%d-%H%M%S')
-        filepath = f"files/{current_time}.png"
-        self.ids.camera.export_to_png(filepath)
+        self.filepath = f"files/{current_time}.png"
+        self.ids.camera.export_to_png(self.filepath)
         self.manager.current = 'image_screen'
-        self.manager.current_screen.ids.img.source = filepath
+        self.manager.current_screen.ids.img.source = self.filepath
 
 
 class ImageScreen(Screen):
-    pass
+    link_message = "Create a Link First!"
+    def create_link(self):
+        try:
+            file_path = App.get_running_app().root.ids.camera_screen.filepath
+            # fileshare = FileSharer(filepath=file_path)
+            self.url = "filestack.com" # fileshare.share()
+            self.ids.link.text = self.url
+        except:
+            self.ids.link.text = "Error"
+
+    def copy_link(self):
+        try:
+            Clipboard.copy(self.url)
+        except:
+            self.ids.link.text = self.link_message
+
+    def open_link(self):
+        try:
+            webbrowser.open(self.url)
+        except:
+            self.ids.link.text = self.link_message
 
 
 MainApp().run()
